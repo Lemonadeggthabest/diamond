@@ -1,0 +1,881 @@
+-- Wait for game to fully load
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+task.wait(1)
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Check if player is owner
+local isOwner = (player.Name == "Lemonadeggthabest")
+
+-- Settings
+local settings = {
+    AutoInteract = false,
+    HoldDuration = 5,
+    KeyUnlocked = isOwner, -- Auto-unlock for owner
+}
+
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DiamondUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Protection
+if gethui then
+    ScreenGui.Parent = gethui()
+elseif syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = game.CoreGui
+else
+    ScreenGui.Parent = game.CoreGui
+end
+
+-- Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 600, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = MainFrame
+
+-- Shadow effect
+local Shadow = Instance.new("ImageLabel")
+Shadow.Name = "Shadow"
+Shadow.Size = UDim2.new(1, 30, 1, 30)
+Shadow.Position = UDim2.new(0, -15, 0, -15)
+Shadow.BackgroundTransparency = 1
+Shadow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+Shadow.ImageTransparency = 0.5
+Shadow.ZIndex = 0
+Shadow.Parent = MainFrame
+
+-- Top Bar
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Size = UDim2.new(1, 0, 0, 50)
+TopBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
+
+local TopBarCorner = Instance.new("UICorner")
+TopBarCorner.CornerRadius = UDim.new(0, 12)
+TopBarCorner.Parent = TopBar
+
+-- Fix corner at bottom
+local TopBarFix = Instance.new("Frame")
+TopBarFix.Size = UDim2.new(1, 0, 0, 12)
+TopBarFix.Position = UDim2.new(0, 0, 1, -12)
+TopBarFix.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+TopBarFix.BorderSizePixel = 0
+TopBarFix.Parent = TopBar
+
+-- Title with gradient
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(0.7, 0, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.Text = "💎 Diamond"
+Title.TextColor3 = Color3.fromRGB(100, 200, 255)
+Title.TextSize = 24
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TopBar
+
+-- Credits text
+local Credits = Instance.new("TextLabel")
+Credits.Name = "Credits"
+Credits.Size = UDim2.new(0.7, 0, 0.5, 0)
+Credits.Position = UDim2.new(0, 15, 0.5, 0)
+Credits.BackgroundTransparency = 1
+Credits.Font = Enum.Font.Gotham
+Credits.Text = "by Lemonade"
+Credits.TextColor3 = Color3.fromRGB(150, 150, 150)
+Credits.TextSize = 12
+Credits.TextXAlignment = Enum.TextXAlignment.Left
+Credits.Parent = TopBar
+
+-- Close Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Size = UDim2.new(0, 35, 0, 35)
+CloseButton.Position = UDim2.new(1, -45, 0.5, -17.5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+CloseButton.BorderSizePixel = 0
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 20
+CloseButton.Parent = TopBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 8)
+CloseCorner.Parent = CloseButton
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+CloseButton.MouseEnter:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 50, 50)}):Play()
+end)
+
+CloseButton.MouseLeave:Connect(function()
+    TweenService:Create(CloseButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
+end)
+
+-- Minimize Button
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Size = UDim2.new(0, 35, 0, 35)
+MinimizeButton.Position = UDim2.new(1, -85, 0.5, -17.5)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MinimizeButton.BorderSizePixel = 0
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.Text = "−"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.TextSize = 20
+MinimizeButton.Parent = TopBar
+
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 8)
+MinimizeCorner.Parent = MinimizeButton
+
+local isMinimized = false
+MinimizeButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    if isMinimized then
+        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.new(0, 600, 0, 50)}):Play()
+        MinimizeButton.Text = "+"
+    else
+        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = UDim2.new(0, 600, 0, 400)}):Play()
+        MinimizeButton.Text = "−"
+    end
+end)
+
+MinimizeButton.MouseEnter:Connect(function()
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+end)
+
+MinimizeButton.MouseLeave:Connect(function()
+    TweenService:Create(MinimizeButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
+end)
+
+-- Tab Container (Right Side)
+local TabContainer = Instance.new("Frame")
+TabContainer.Name = "TabContainer"
+TabContainer.Size = UDim2.new(0, 140, 1, -60)
+TabContainer.Position = UDim2.new(1, -150, 0, 60)
+TabContainer.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+TabContainer.BorderSizePixel = 0
+TabContainer.Parent = MainFrame
+
+local TabContainerCorner = Instance.new("UICorner")
+TabContainerCorner.CornerRadius = UDim.new(0, 8)
+TabContainerCorner.Parent = TabContainer
+
+local TabLayout = Instance.new("UIListLayout")
+TabLayout.Padding = UDim.new(0, 5)
+TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TabLayout.Parent = TabContainer
+
+local TabPadding = Instance.new("UIPadding")
+TabPadding.PaddingTop = UDim.new(0, 10)
+TabPadding.PaddingBottom = UDim.new(0, 10)
+TabPadding.PaddingLeft = UDim.new(0, 10)
+TabPadding.PaddingRight = UDim.new(0, 10)
+TabPadding.Parent = TabContainer
+
+-- Content Frame (Left Side)
+local ContentFrame = Instance.new("ScrollingFrame")
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Size = UDim2.new(1, -170, 1, -70)
+ContentFrame.Position = UDim2.new(0, 10, 0, 60)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.BorderSizePixel = 0
+ContentFrame.ScrollBarThickness = 6
+ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 200, 255)
+ContentFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ContentFrame.Parent = MainFrame
+
+local ContentLayout = Instance.new("UIListLayout")
+ContentLayout.Padding = UDim.new(0, 10)
+ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ContentLayout.Parent = ContentFrame
+
+ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 10)
+end)
+
+-- Tab Pages Container
+local TabPages = {}
+local currentTab = nil
+
+-- Create Tab Button Function
+local function CreateTabButton(text, icon, locked)
+    local TabButton = Instance.new("TextButton")
+    TabButton.Name = text
+    TabButton.Size = UDim2.new(1, 0, 0, 40)
+    TabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    TabButton.BorderSizePixel = 0
+    TabButton.Font = Enum.Font.Gotham
+    TabButton.Text = (locked and "🔒 " or icon .. " ") .. text
+    TabButton.TextColor3 = locked and Color3.fromRGB(150, 150, 150) or Color3.fromRGB(255, 255, 255)
+    TabButton.TextSize = 12
+    TabButton.TextXAlignment = Enum.TextXAlignment.Left
+    TabButton.Parent = TabContainer
+    
+    local TabPadding = Instance.new("UIPadding")
+    TabPadding.PaddingLeft = UDim.new(0, 10)
+    TabPadding.Parent = TabButton
+    
+    local TabCorner = Instance.new("UICorner")
+    TabCorner.CornerRadius = UDim.new(0, 6)
+    TabCorner.Parent = TabButton
+    
+    -- Create associated page
+    local Page = Instance.new("Frame")
+    Page.Name = text .. "Page"
+    Page.Size = UDim2.new(1, 0, 1, 0)
+    Page.BackgroundTransparency = 1
+    Page.Visible = false
+    Page.Parent = ContentFrame
+    
+    local PageLayout = Instance.new("UIListLayout")
+    PageLayout.Padding = UDim.new(0, 10)
+    PageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    PageLayout.Parent = Page
+    
+    TabPages[text] = {
+        Button = TabButton,
+        Page = Page,
+        Locked = locked
+    }
+    
+    TabButton.MouseButton1Click:Connect(function()
+        if TabPages[text].Locked then
+            return
+        end
+        
+        -- Hide all pages
+        for _, data in pairs(TabPages) do
+            data.Page.Visible = false
+            data.Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        end
+        
+        -- Show selected page
+        Page.Visible = true
+        TabButton.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
+        currentTab = text
+    end)
+    
+    TabButton.MouseEnter:Connect(function()
+        if currentTab ~= text and not TabPages[text].Locked then
+            TweenService:Create(TabButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+        end
+    end)
+    
+    TabButton.MouseLeave:Connect(function()
+        if currentTab ~= text then
+            TweenService:Create(TabButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+        end
+    end)
+    
+    return Page
+end
+
+-- Unlock tab function
+local function UnlockTab(tabName)
+    if TabPages[tabName] then
+        TabPages[tabName].Locked = false
+        TabPages[tabName].Button.Text = TabPages[tabName].Button.Text:gsub("🔒 ", "🔓 ")
+        TabPages[tabName].Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+end
+
+-- Create Tabs
+local HomePage = CreateTabButton("Home", "🏠", false)
+local KeyPage = CreateTabButton("Key System", "🔑", false)
+local MopPage = CreateTabButton("Mop-AutoFarm", "🧹", not isOwner) -- Auto-unlock for owner
+local CreditsPage = CreateTabButton("Credits", "👥", false)
+
+-- If owner, unlock Mop-AutoFarm tab
+if isOwner then
+    UnlockTab("Mop-AutoFarm")
+end
+
+-- Helper Functions
+local function CreateSection(parent, text)
+    local Section = Instance.new("TextLabel")
+    Section.Name = "Section"
+    Section.Size = UDim2.new(1, 0, 0, 30)
+    Section.BackgroundTransparency = 1
+    Section.Font = Enum.Font.GothamBold
+    Section.Text = text
+    Section.TextColor3 = Color3.fromRGB(100, 200, 255)
+    Section.TextSize = 16
+    Section.TextXAlignment = Enum.TextXAlignment.Left
+    Section.Parent = parent
+    
+    return Section
+end
+
+local function CreateToggle(parent, text, default, callback)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Name = "ToggleFrame"
+    ToggleFrame.Size = UDim2.new(1, 0, 0, 45)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    ToggleFrame.BorderSizePixel = 0
+    ToggleFrame.Parent = parent
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
+    ToggleCorner.Parent = ToggleFrame
+    
+    local ToggleLabel = Instance.new("TextLabel")
+    ToggleLabel.Size = UDim2.new(1, -60, 1, 0)
+    ToggleLabel.Position = UDim2.new(0, 15, 0, 0)
+    ToggleLabel.BackgroundTransparency = 1
+    ToggleLabel.Font = Enum.Font.Gotham
+    ToggleLabel.Text = text
+    ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleLabel.TextSize = 14
+    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ToggleLabel.Parent = ToggleFrame
+    
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0, 45, 0, 25)
+    ToggleButton.Position = UDim2.new(1, -55, 0.5, -12.5)
+    ToggleButton.BackgroundColor3 = default and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(50, 50, 50)
+    ToggleButton.BorderSizePixel = 0
+    ToggleButton.Text = ""
+    ToggleButton.Parent = ToggleFrame
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(1, 0)
+    ButtonCorner.Parent = ToggleButton
+    
+    local ToggleCircle = Instance.new("Frame")
+    ToggleCircle.Size = UDim2.new(0, 19, 0, 19)
+    ToggleCircle.Position = default and UDim2.new(1, -22, 0.5, -9.5) or UDim2.new(0, 3, 0.5, -9.5)
+    ToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleCircle.BorderSizePixel = 0
+    ToggleCircle.Parent = ToggleButton
+    
+    local CircleCorner = Instance.new("UICorner")
+    CircleCorner.CornerRadius = UDim.new(1, 0)
+    CircleCorner.Parent = ToggleCircle
+    
+    local enabled = default
+    
+    ToggleButton.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        callback(enabled)
+        
+        TweenService:Create(ToggleButton, TweenInfo.new(0.2), {
+            BackgroundColor3 = enabled and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(50, 50, 50)
+        }):Play()
+        
+        TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {
+            Position = enabled and UDim2.new(1, -22, 0.5, -9.5) or UDim2.new(0, 3, 0.5, -9.5)
+        }):Play()
+    end)
+    
+    return ToggleFrame
+end
+
+local function CreateSlider(parent, text, min, max, default, callback)
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Name = "SliderFrame"
+    SliderFrame.Size = UDim2.new(1, 0, 0, 65)
+    SliderFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    SliderFrame.BorderSizePixel = 0
+    SliderFrame.Parent = parent
+    
+    local SliderCorner = Instance.new("UICorner")
+    SliderCorner.CornerRadius = UDim.new(0, 8)
+    SliderCorner.Parent = SliderFrame
+    
+    local SliderLabel = Instance.new("TextLabel")
+    SliderLabel.Size = UDim2.new(0.7, 0, 0, 25)
+    SliderLabel.Position = UDim2.new(0, 15, 0, 5)
+    SliderLabel.BackgroundTransparency = 1
+    SliderLabel.Font = Enum.Font.Gotham
+    SliderLabel.Text = text
+    SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SliderLabel.TextSize = 14
+    SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SliderLabel.Parent = SliderFrame
+    
+    local SliderValue = Instance.new("TextLabel")
+    SliderValue.Size = UDim2.new(0.3, -15, 0, 25)
+    SliderValue.Position = UDim2.new(0.7, 0, 0, 5)
+    SliderValue.BackgroundTransparency = 1
+    SliderValue.Font = Enum.Font.GothamBold
+    SliderValue.Text = tostring(default)
+    SliderValue.TextColor3 = Color3.fromRGB(100, 200, 255)
+    SliderValue.TextSize = 14
+    SliderValue.TextXAlignment = Enum.TextXAlignment.Right
+    SliderValue.Parent = SliderFrame
+    
+    local SliderBack = Instance.new("Frame")
+    SliderBack.Size = UDim2.new(1, -30, 0, 8)
+    SliderBack.Position = UDim2.new(0, 15, 1, -20)
+    SliderBack.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    SliderBack.BorderSizePixel = 0
+    SliderBack.Parent = SliderFrame
+    
+    local BackCorner = Instance.new("UICorner")
+    BackCorner.CornerRadius = UDim.new(1, 0)
+    BackCorner.Parent = SliderBack
+    
+    local SliderFill = Instance.new("Frame")
+    SliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+    SliderFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
+    SliderFill.BorderSizePixel = 0
+    SliderFill.Parent = SliderBack
+    
+    local FillCorner = Instance.new("UICorner")
+    FillCorner.CornerRadius = UDim.new(1, 0)
+    FillCorner.Parent = SliderFill
+    
+    local dragging = false
+    
+    local function updateSlider(input)
+        local pos = math.clamp((input.Position.X - SliderBack.AbsolutePosition.X) / SliderBack.AbsoluteSize.X, 0, 1)
+        local value = math.floor(min + (max - min) * pos * 2) / 2
+        
+        SliderFill.Size = UDim2.new(pos, 0, 1, 0)
+        SliderValue.Text = tostring(value)
+        callback(value)
+    end
+    
+    SliderBack.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            updateSlider(input)
+        end
+    end)
+    
+    SliderBack.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            updateSlider(input)
+        end
+    end)
+    
+    return SliderFrame
+end
+
+local function CreateButton(parent, text, callback)
+    local ButtonFrame = Instance.new("TextButton")
+    ButtonFrame.Name = "ButtonFrame"
+    ButtonFrame.Size = UDim2.new(1, 0, 0, 45)
+    ButtonFrame.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
+    ButtonFrame.BorderSizePixel = 0
+    ButtonFrame.Font = Enum.Font.GothamBold
+    ButtonFrame.Text = text
+    ButtonFrame.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ButtonFrame.TextSize = 14
+    ButtonFrame.Parent = parent
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 8)
+    ButtonCorner.Parent = ButtonFrame
+    
+    ButtonFrame.MouseButton1Click:Connect(callback)
+    
+    ButtonFrame.MouseEnter:Connect(function()
+        TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(120, 220, 255)}):Play()
+    end)
+    
+    ButtonFrame.MouseLeave:Connect(function()
+        TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(100, 200, 255)}):Play()
+    end)
+    
+    return ButtonFrame
+end
+
+local function CreateInfo(parent, title, text)
+    local InfoFrame = Instance.new("Frame")
+    InfoFrame.Name = "InfoFrame"
+    InfoFrame.Size = UDim2.new(1, 0, 0, 0)
+    InfoFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    InfoFrame.BorderSizePixel = 0
+    InfoFrame.Parent = parent
+    
+    local InfoCorner = Instance.new("UICorner")
+    InfoCorner.CornerRadius = UDim.new(0, 8)
+    InfoCorner.Parent = InfoFrame
+    
+    local InfoTitle = Instance.new("TextLabel")
+    InfoTitle.Size = UDim2.new(1, -20, 0, 25)
+    InfoTitle.Position = UDim2.new(0, 10, 0, 8)
+    InfoTitle.BackgroundTransparency = 1
+    InfoTitle.Font = Enum.Font.GothamBold
+    InfoTitle.Text = title
+    InfoTitle.TextColor3 = Color3.fromRGB(100, 200, 255)
+    InfoTitle.TextSize = 14
+    InfoTitle.TextXAlignment = Enum.TextXAlignment.Left
+    InfoTitle.TextYAlignment = Enum.TextYAlignment.Top
+    InfoTitle.Parent = InfoFrame
+    
+    local InfoText = Instance.new("TextLabel")
+    InfoText.Size = UDim2.new(1, -20, 0, 0)
+    InfoText.Position = UDim2.new(0, 10, 0, 33)
+    InfoText.BackgroundTransparency = 1
+    InfoText.Font = Enum.Font.Gotham
+    InfoText.Text = text
+    InfoText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    InfoText.TextSize = 12
+    InfoText.TextXAlignment = Enum.TextXAlignment.Left
+    InfoText.TextYAlignment = Enum.TextYAlignment.Top
+    InfoText.TextWrapped = true
+    InfoText.Parent = InfoFrame
+    
+    local textSize = game:GetService("TextService"):GetTextSize(text, 12, Enum.Font.Gotham, Vector2.new(InfoText.AbsoluteSize.X, math.huge))
+    InfoText.Size = UDim2.new(1, -20, 0, textSize.Y)
+    InfoFrame.Size = UDim2.new(1, 0, 0, textSize.Y + 45)
+    
+    return InfoFrame
+end
+
+-- HOME PAGE
+CreateSection(HomePage, "👤 Player Information")
+
+local ProfileFrame = Instance.new("Frame")
+ProfileFrame.Size = UDim2.new(1, 0, 0, 100)
+ProfileFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ProfileFrame.BorderSizePixel = 0
+ProfileFrame.Parent = HomePage
+
+local ProfileCorner = Instance.new("UICorner")
+ProfileCorner.CornerRadius = UDim.new(0, 8)
+ProfileCorner.Parent = ProfileFrame
+
+-- Profile Picture
+local ProfilePic = Instance.new("ImageLabel")
+ProfilePic.Size = UDim2.new(0, 70, 0, 70)
+ProfilePic.Position = UDim2.new(0, 15, 0.5, -35)
+ProfilePic.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ProfilePic.BorderSizePixel = 0
+ProfilePic.Image = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+ProfilePic.Parent = ProfileFrame
+
+local PicCorner = Instance.new("UICorner")
+PicCorner.CornerRadius = UDim.new(1, 0)
+PicCorner.Parent = ProfilePic
+
+-- Username
+local Username = Instance.new("TextLabel")
+Username.Size = UDim2.new(1, -105, 0, 35)
+Username.Position = UDim2.new(0, 95, 0, 15)
+Username.BackgroundTransparency = 1
+Username.Font = Enum.Font.GothamBold
+Username.Text = player.Name
+Username.TextColor3 = Color3.fromRGB(255, 255, 255)
+Username.TextSize = 18
+Username.TextXAlignment = Enum.TextXAlignment.Left
+Username.Parent = ProfileFrame
+
+-- Display Name
+local DisplayName = Instance.new("TextLabel")
+DisplayName.Size = UDim2.new(1, -105, 0, 25)
+DisplayName.Position = UDim2.new(0, 95, 0, 50)
+DisplayName.BackgroundTransparency = 1
+DisplayName.Font = Enum.Font.Gotham
+DisplayName.Text = "@" .. player.DisplayName
+DisplayName.TextColor3 = Color3.fromRGB(150, 150, 150)
+DisplayName.TextSize = 14
+DisplayName.TextXAlignment = Enum.TextXAlignment.Left
+DisplayName.Parent = ProfileFrame
+
+-- Role Section
+CreateSection(HomePage, "🏅 Role")
+
+local RoleFrame = Instance.new("Frame")
+RoleFrame.Size = UDim2.new(1, 0, 0, 60)
+RoleFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+RoleFrame.BorderSizePixel = 0
+RoleFrame.Parent = HomePage
+
+local RoleCorner = Instance.new("UICorner")
+RoleCorner.CornerRadius = UDim.new(0, 8)
+RoleCorner.Parent = RoleFrame
+
+local RoleLabel = Instance.new("TextLabel")
+RoleLabel.Size = UDim2.new(1, -30, 1, 0)
+RoleLabel.Position = UDim2.new(0, 15, 0, 0)
+RoleLabel.BackgroundTransparency = 1
+RoleLabel.Font = Enum.Font.GothamBold
+RoleLabel.Text = isOwner and "👑 Owner" or "Member"
+RoleLabel.TextColor3 = isOwner and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(200, 200, 200)
+RoleLabel.TextSize = isOwner and 20 or 18
+RoleLabel.TextXAlignment = Enum.TextXAlignment.Center
+RoleLabel.Parent = RoleFrame
+
+CreateInfo(HomePage, "Welcome to Diamond!", "Thank you for using Diamond Auto System. Navigate through the tabs on the right to access different features." .. (isOwner and "\n\nAs the Owner, you have access to all features!" or " Use the Key System tab to unlock premium features."))
+
+-- KEY SYSTEM PAGE
+CreateSection(KeyPage, "🔑 Enter Key")
+
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Size = UDim2.new(1, 0, 0, 120)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+KeyFrame.BorderSizePixel = 0
+KeyFrame.Parent = KeyPage
+
+local KeyFrameCorner = Instance.new("UICorner")
+KeyFrameCorner.CornerRadius = UDim.new(0, 8)
+KeyFrameCorner.Parent = KeyFrame
+
+local KeyInput = Instance.new("TextBox")
+KeyInput.Size = UDim2.new(1, -30, 0, 45)
+KeyInput.Position = UDim2.new(0, 15, 0, 15)
+KeyInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+KeyInput.BorderSizePixel = 0
+KeyInput.Font = Enum.Font.Gotham
+KeyInput.PlaceholderText = isOwner and "Owner - All Features Unlocked!" or "Enter your key here..."
+KeyInput.Text = ""
+KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyInput.TextSize = 14
+KeyInput.Parent = KeyFrame
+
+if isOwner then
+    KeyInput.TextEditable = false
+end
+
+local KeyInputCorner = Instance.new("UICorner")
+KeyInputCorner.CornerRadius = UDim.new(0, 6)
+KeyInputCorner.Parent = KeyInput
+
+local SubmitKeyButton = Instance.new("TextButton")
+SubmitKeyButton.Size = UDim2.new(1, -30, 0, 45)
+SubmitKeyButton.Position = UDim2.new(0, 15, 0, 65)
+SubmitKeyButton.BackgroundColor3 = isOwner and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(100, 200, 255)
+SubmitKeyButton.BorderSizePixel = 0
+SubmitKeyButton.Font = Enum.Font.GothamBold
+SubmitKeyButton.Text = isOwner and "✓ Owner Access" or "Submit Key"
+SubmitKeyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubmitKeyButton.TextSize = 14
+SubmitKeyButton.Parent = KeyFrame
+
+local SubmitKeyCorner = Instance.new("UICorner")
+SubmitKeyCorner.CornerRadius = UDim.new(0, 6)
+SubmitKeyCorner.Parent = SubmitKeyButton
+
+local KeyStatusLabel = Instance.new("TextLabel")
+KeyStatusLabel.Size = UDim2.new(1, 0, 0, 30)
+KeyStatusLabel.BackgroundTransparency = 1
+KeyStatusLabel.Font = Enum.Font.Gotham
+KeyStatusLabel.Text = isOwner and "✓ All features unlocked for Owner!" or ""
+KeyStatusLabel.TextColor3 = isOwner and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255, 100, 100)
+KeyStatusLabel.TextSize = 13
+KeyStatusLabel.Parent = KeyPage
+
+if not isOwner then
+    SubmitKeyButton.MouseButton1Click:Connect(function()
+        local key = KeyInput.Text
+        
+        if key == "FREE-AUTOFARM" then
+            settings.KeyUnlocked = true
+            UnlockTab("Mop-AutoFarm")
+            KeyStatusLabel.Text = "✓ Key accepted! Mop-AutoFarm unlocked!"
+            KeyStatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+            KeyInput.Text = ""
+        else
+            KeyStatusLabel.Text = "✗ Invalid key. Please try again."
+            KeyStatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        end
+    end)
+    
+    SubmitKeyButton.MouseEnter:Connect(function()
+        TweenService:Create(SubmitKeyButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(120, 220, 255)}):Play()
+    end)
+    
+    SubmitKeyButton.MouseLeave:Connect(function()
+        TweenService:Create(SubmitKeyButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(100, 200, 255)}):Play()
+    end)
+end
+
+CreateInfo(KeyPage, "Valid Key", isOwner and "You are the Owner - No key needed!" or "FREE-AUTOFARM")
+
+-- MOP-AUTOFARM PAGE (Auto Interact)
+CreateSection(MopPage, "⚙️ Auto Interact Controls")
+
+-- Auto Interact Functions
+local function findInteractPrompt()
+    for _, gui in pairs(playerGui:GetDescendants()) do
+        if gui:IsA("TextLabel") or gui:IsA("TextButton") then
+            local text = gui.Text:lower()
+            if text:find("interact") or text:find("press e") or text:find("hold e") or text:find("%[e%]") or text:find("to interact") then
+                return true, gui
+            end
+        end
+    end
+    
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        local hrp = character.HumanoidRootPart
+        
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("ProximityPrompt") and obj.Enabled then
+                local parent = obj.Parent
+                if parent and parent:IsA("BasePart") then
+                    local distance = (hrp.Position - parent.Position).Magnitude
+                    if distance <= obj.MaxActivationDistance then
+                        return true, obj
+                    end
+                end
+            end
+        end
+    end
+    
+    return false, nil
+end
+
+local function isPromptStillActive(promptRef)
+    if not promptRef then return false end
+    
+    if promptRef:IsA("GuiObject") then
+        return promptRef.Visible and promptRef.Parent ~= nil
+    end
+    
+    if promptRef:IsA("ProximityPrompt") then
+        if not promptRef.Enabled or promptRef.Parent == nil then
+            return false
+        end
+        
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local hrp = character.HumanoidRootPart
+            local parent = promptRef.Parent
+            if parent and parent:IsA("BasePart") then
+                local distance = (hrp.Position - parent.Position).Magnitude
+                return distance <= promptRef.MaxActivationDistance
+            end
+        end
+    end
+    
+    return false
+end
+
+local function autoInteractLoop()
+    while settings.AutoInteract do
+        local foundPrompt, promptRef = findInteractPrompt()
+        
+        if foundPrompt then
+            if promptRef and promptRef:IsA("ProximityPrompt") then
+                local holdTime = promptRef.HoldDuration > 0 and promptRef.HoldDuration or settings.HoldDuration
+                
+                local success = pcall(function()
+                    fireproximityprompt(promptRef)
+                end)
+                
+                if not success then
+                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+                    
+                    local startTime = tick()
+                    while (tick() - startTime) < holdTime and isPromptStillActive(promptRef) and settings.AutoInteract do
+                        task.wait(0.1)
+                    end
+                    
+                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+                end
+                
+                task.wait(1)
+                
+            else
+                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+                
+                local startTime = tick()
+                while (tick() - startTime) < settings.HoldDuration and settings.AutoInteract do
+                    if not isPromptStillActive(promptRef) then
+                        break
+                    end
+                    task.wait(0.1)
+                end
+                
+                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+                task.wait(1)
+            end
+        else
+            task.wait(0.3)
+        end
+    end
+    
+    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+end
+
+CreateToggle(MopPage, "Enable Auto Interact", false, function(value)
+    settings.AutoInteract = value
+    if value then
+        task.spawn(autoInteractLoop)
+    else
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+    end
+end)
+
+CreateSection(MopPage, "📊 Settings")
+
+CreateSlider(MopPage, "Max Hold Duration", 1, 15, 5, function(value)
+    settings.HoldDuration = value
+end)
+
+CreateButton(MopPage, "🔍 Test Interact Once", function()
+    local found, prompt = findInteractPrompt()
+    if found then
+        if prompt and prompt:IsA("ProximityPrompt") then
+            pcall(function()
+                fireproximityprompt(prompt)
+            end)
+        else
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+            task.wait(settings.HoldDuration)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+        end
+    end
+end)
+
+-- CREDITS PAGE
+CreateSection(CreditsPage, "👥 Credits")
+
+CreateInfo(CreditsPage, "Created by Lemonade", "Main Developer & Designer")
+CreateInfo(CreditsPage, "Credits: Lemonade & Diamon", "Diamond Auto System v1.0")
+CreateInfo(CreditsPage, "Features", "• Player profile display with roles\n• Secure key system\n• Owner privileges\n• Auto interact functionality\n• ProximityPrompt & GUI detection\n• Smooth animations\n• Modern UI design")
+
+-- Set Home as default tab
+TabPages["Home"].Page.Visible = true
+TabPages["Home"].Button.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
+currentTab = "Home"
+
+print("✓ Diamond Auto System loaded successfully")
+print("✓ Custom UI with Tabs & Roles - Created by Lemonade")
+print("✓ Credits: Lemonade & Diamon")
+if isOwner then
+    print("✓ Owner detected - All features unlocked!")
+end
